@@ -1,0 +1,66 @@
+// -----------------------------
+// Variables
+// -----------------------------
+$color-bg-start: #ff9a9e;
+$color-bg-end: #a18cd1;
+$color-card: #ffffff;
+$color-text: #2d2438;
+$color-muted: #6b6178;
+$color-primary: #ff5e78;
+$color-primary-dark: #e8425c;
+$color-success: #37c58f;
+
+$radius: 16px;
+$shadow-soft: 0 8px 24px rgba(45, 36, 56, 0.12);
+
+$space-1: 0.5rem;
+$space-2: 1rem;
+$space-3: 1.5rem;
+$space-4: 2.5rem;
+
+// -----------------------------
+// Reset
+// -----------------------------
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  font-family:
+    'Segoe UI',
+    system-ui,
+    -apple-system,
+    Roboto,
+    sans-serif;
+  color: $color-text;
+  background: #76E5FC;
+  background-attachment: fixed;
+}
+
+#app {
+  min-height: 100vh;
+  overflow-x: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
