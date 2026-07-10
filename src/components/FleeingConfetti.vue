@@ -10,7 +10,7 @@ const IDLE_MS = 3000
 const CARD_WIDTH = 150
 const CARD_HEIGHT = 180
 
-const PRIZES = [
+const PRESENTS = [
   {
     img: passportImg,
     title: 'Swiss Passport',
@@ -21,15 +21,15 @@ const PRIZES = [
   { img: loveImg, title: 'Endless Sis Love', desc: 'Unlimited hugs, zero refunds.' },
 ]
 
-const winnableIndices = PRIZES.reduce((acc, prize, i) => {
-  if (!prize.runaway && !prize.outOfStock) acc.push(i)
+const winnableIndices = PRESENTS.reduce((acc, present, i) => {
+  if (!present.runaway && !present.outOfStock) acc.push(i)
   return acc
 }, [])
 const winnerIndex = winnableIndices[Math.floor(Math.random() * winnableIndices.length)]
 
 const cards = reactive(
-  PRIZES.map((prize, i) => ({
-    ...prize,
+  PRESENTS.map((present, i) => ({
+    ...present,
     id: i,
     isWinner: i === winnerIndex,
     wrong: false,
@@ -173,40 +173,40 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="prize-row" :class="{ 'prize-row--locked': isModalOpen }">
+  <div class="present-row" :class="{ 'present-row--locked': isModalOpen }">
     <button
       v-for="card in staticCards"
       :key="card.id"
-      class="prize-card"
-      :class="{ 'prize-card--wrong': card.wrong }"
+      class="present-card"
+      :class="{ 'present-card--wrong': card.wrong }"
       @click="pick(card)"
     >
-      <img class="prize-card__img" :src="card.img" :alt="card.title" />
-      <h3 class="prize-card__title">{{ card.title }}</h3>
-      <p class="prize-card__desc">{{ card.wrong ? "Nope, it's empty." : card.desc }}</p>
+      <img class="present-card__img" :src="card.img" :alt="card.title" />
+      <h3 class="present-card__title">{{ card.title }}</h3>
+      <p class="present-card__desc">{{ card.wrong ? "Nope, it's empty." : card.desc }}</p>
     </button>
 
     <button
       v-if="!isEscaped"
       ref="runawayEl"
-      class="prize-card"
-      :class="{ 'prize-card--wrong': runawayCard.wrong }"
+      class="present-card"
+      :class="{ 'present-card--wrong': runawayCard.wrong }"
       @click="pick(runawayCard)"
       @mouseenter="jumpAway"
       @pointerdown="handleRunawayPointerDown"
     >
-      <img class="prize-card__img" :src="runawayCard.img" :alt="runawayCard.title" />
-      <h3 class="prize-card__title">{{ runawayCard.title }}</h3>
-      <p class="prize-card__desc">
+      <img class="present-card__img" :src="runawayCard.img" :alt="runawayCard.title" />
+      <h3 class="present-card__title">{{ runawayCard.title }}</h3>
+      <p class="present-card__desc">
         {{ runawayCard.wrong ? "Nope, it's empty." : runawayCard.desc }}
       </p>
     </button>
   </div>
 
-  <p v-if="isEscaped && runawayDodges > 0 && !success" class="prize-hint">
+  <p v-if="isEscaped && runawayDodges > 0 && !success" class="present-hint">
     Million dollars tried {{ runawayDodges }} time{{ runawayDodges === 1 ? '' : 's' }}. It was never real anyway.
   </p>
-  <p v-else-if="!success && wrongCount > 0" class="prize-hint">
+  <p v-else-if="!success && wrongCount > 0" class="present-hint">
     Tried {{ wrongCount }} time{{ wrongCount === 1 ? '' : 's' }}. Keep going.
   </p>
 
@@ -214,16 +214,16 @@ onUnmounted(() => {
     <button
       v-if="isEscaped"
       ref="runawayEl"
-      class="prize-card prize-card--runaway"
-      :class="{ 'prize-card--locked': isModalOpen }"
+      class="present-card present-card--runaway"
+      :class="{ 'present-card--locked': isModalOpen }"
       :style="{ left: runawayPos.x + 'px', top: runawayPos.y + 'px' }"
       @click="pick(runawayCard)"
       @mouseenter="jumpAway"
       @pointerdown="handleRunawayPointerDown"
     >
-      <img class="prize-card__img" :src="runawayCard.img" :alt="runawayCard.title" />
-      <h3 class="prize-card__title">{{ runawayCard.title }}</h3>
-      <p class="prize-card__desc">
+      <img class="present-card__img" :src="runawayCard.img" :alt="runawayCard.title" />
+      <h3 class="present-card__title">{{ runawayCard.title }}</h3>
+      <p class="present-card__desc">
         {{ runawayCard.wrong ? "Nope, it's empty." : runawayCard.desc }}
       </p>
     </button>
@@ -266,7 +266,7 @@ onUnmounted(() => {
 </template>
 
 <style lang="scss" scoped>
-.prize-row {
+.present-row {
   display: flex;
   flex-wrap: nowrap;
   justify-content: center;
@@ -279,7 +279,7 @@ onUnmounted(() => {
   }
 }
 
-.prize-card {
+.present-card {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -323,7 +323,7 @@ onUnmounted(() => {
   &--wrong {
     animation: shake 0.4s ease;
 
-    .prize-card__desc {
+    .present-card__desc {
       color: #e8425c;
     }
   }
@@ -343,13 +343,13 @@ onUnmounted(() => {
   }
 }
 
-.prize-hint {
+.present-hint {
   text-align: center;
   font-size: 0.9rem;
   color: #5e503f;
 }
 
-.prize-success {
+.present-success {
   text-align: center;
   font-size: 1.1rem;
   font-weight: 700;

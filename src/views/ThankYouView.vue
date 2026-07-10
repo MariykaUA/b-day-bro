@@ -21,6 +21,11 @@ const isZoomed = ref(false)
     <p class="thanks__redeem">
       *If you want to redeem it, please take your sister to the store of your choice.
     </p>
+
+    <p class="thanks__again">
+      Not satisfied?
+      <RouterLink to="/" class="thanks__again-link">Choose another present</RouterLink>
+    </p>
   </main>
 </template>
 
@@ -49,6 +54,23 @@ const isZoomed = ref(false)
   &__redeem {
     color: #091186;
     font-size: 0.95rem;
+  }
+
+  &__again {
+    margin-top: 1.5rem;
+    color: #091186;
+    font-size: 1rem;
+
+    &-link {
+      color: #091186;
+      font-weight: 700;
+      text-decoration: underline;
+      transition: color 0.15s ease;
+
+      &:hover {
+        color: #4c70b8;
+      }
+    }
   }
 }
 

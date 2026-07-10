@@ -12,7 +12,7 @@ import FleeingConfetti from '../components/FleeingConfetti.vue'
     </header>
 
     <section class="card">
-      <h2 class="card__title">Choose your prize</h2>
+      <h2 class="card__title">Choose your present</h2>
       <p class="card__hint">Only one of these boxes actually works.</p>
       <FleeingConfetti />
     </section>
