@@ -14,7 +14,7 @@ Always write code for this project using:
 
 ---
 
-## Code Style
+## Code Style.
 
 Follow these rules:
 
