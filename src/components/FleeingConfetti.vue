@@ -1,5 +1,6 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
 import loveImg from '../love.png'
 import passportImg from '../passport.png'
 import salaryImg from '../salary.png'
@@ -62,9 +63,16 @@ function launchPageConfetti() {
   }))
 }
 
+const router = useRouter()
+
 function closeAccepted() {
   showAccepted.value = false
   pageConfettiPieces.value = []
+}
+
+function proceed() {
+  closeAccepted()
+  router.push('/thank-you')
 }
 
 const runawayEl = ref(null)
@@ -246,7 +254,7 @@ onUnmounted(() => {
     <div v-if="showAccepted" class="modal-backdrop" @click.self="closeAccepted">
       <div class="modal">
         <h3 class="modal__title">Accepted! <br> You have just signed up for the endless Sis love!</h3>
-        <button class="modal__proceed" @click="closeAccepted">
+        <button class="modal__proceed" @click="proceed">
           Proceed
           <span class="modal__proceed-arrow">&rarr;</span>
         </button>
