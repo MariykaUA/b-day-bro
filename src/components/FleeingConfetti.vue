@@ -1,12 +1,11 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
-import HonestConfetti from './HonestConfetti.vue'
 import loveImg from '../love.png'
 import passportImg from '../passport.png'
 import salaryImg from '../salary.png'
 
 const DODGE_RADIUS = 120
-const IDLE_MS = 5000
+const IDLE_MS = 3000
 const CARD_WIDTH = 150
 const CARD_HEIGHT = 180
 
@@ -41,8 +40,32 @@ const runawayCard = computed(() => cards.find((card) => card.runaway))
 
 const wrongCount = ref(0)
 const success = ref(false)
-const confettiRef = ref(null)
 const showOutOfStock = ref(false)
+const showAccepted = ref(false)
+const isModalOpen = computed(() => showOutOfStock.value || showAccepted.value)
+
+const PAGE_CONFETTI_COUNT = 80
+const CONFETTI_COLORS = ['#ff5e78', '#ffd166', '#37c58f', '#5b8def', '#a18cd1', '#ff9a9e']
+const pageConfettiPieces = ref([])
+
+function launchPageConfetti() {
+  pageConfettiPieces.value = Array.from({ length: PAGE_CONFETTI_COUNT }, (_, i) => ({
+    id: i,
+    style: {
+      left: Math.random() * 100 + '%',
+      background: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+      width: 6 + Math.random() * 6 + 'px',
+      height: 4 + Math.random() * 8 + 'px',
+      animationDuration: 2.5 + Math.random() * 2 + 's',
+      animationDelay: Math.random() * 1.5 + 's',
+    },
+  }))
+}
+
+function closeAccepted() {
+  showAccepted.value = false
+  pageConfettiPieces.value = []
+}
 
 const runawayEl = ref(null)
 const runawayPos = reactive({ x: 0, y: 0 })
@@ -66,13 +89,21 @@ function resetIdleTimer() {
   }, IDLE_MS)
 }
 
-function jumpAway() {
+function flee() {
+  if (isModalOpen.value) return
+
   isEscaped.value = true
   const { x, y } = randomViewportPos(CARD_WIDTH, CARD_HEIGHT)
   runawayPos.x = x
   runawayPos.y = y
-  runawayDodges.value += 1
   resetIdleTimer()
+}
+
+function jumpAway() {
+  if (isModalOpen.value) return
+
+  runawayDodges.value += 1
+  flee()
 }
 
 function handleGlobalMouseMove(event) {
@@ -84,7 +115,7 @@ function handleGlobalMouseMove(event) {
   const distance = Math.hypot(event.clientX - centerX, event.clientY - centerY)
 
   if (distance < DODGE_RADIUS) {
-    jumpAway()
+    flee()
   }
 }
 
@@ -94,7 +125,15 @@ function handleRunawayPointerDown(event) {
 }
 
 function pick(card) {
-  if (success.value) return
+  if (isModalOpen.value) return
+
+  if (success.value) {
+    if (card.isWinner) {
+      showAccepted.value = true
+      launchPageConfetti()
+    }
+    return
+  }
 
   if (card.outOfStock) {
     showOutOfStock.value = true
@@ -103,7 +142,8 @@ function pick(card) {
 
   if (card.isWinner) {
     success.value = true
-    confettiRef.value?.launch()
+    showAccepted.value = true
+    launchPageConfetti()
     return
   }
 
@@ -111,7 +151,7 @@ function pick(card) {
   card.wrong = true
   window.setTimeout(() => {
     card.wrong = false
-  }, 200)
+  }, 5000)
 }
 
 onMounted(() => {
@@ -125,7 +165,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="prize-row">
+  <div class="prize-row" :class="{ 'prize-row--locked': isModalOpen }">
     <button
       v-for="card in staticCards"
       :key="card.id"
@@ -155,8 +195,8 @@ onUnmounted(() => {
     </button>
   </div>
 
-  <p v-if="runawayDodges >= 3 && !success" class="prize-hint">
-    Million dollars clicked {{ runawayDodges }} times. It was never real anyway.
+  <p v-if="isEscaped && runawayDodges > 0 && !success" class="prize-hint">
+    Million dollars tried {{ runawayDodges }} time{{ runawayDodges === 1 ? '' : 's' }}. It was never real anyway.
   </p>
   <p v-else-if="!success && wrongCount > 0" class="prize-hint">
     Tried {{ wrongCount }} time{{ wrongCount === 1 ? '' : 's' }}. Keep going.
@@ -167,6 +207,7 @@ onUnmounted(() => {
       v-if="isEscaped"
       ref="runawayEl"
       class="prize-card prize-card--runaway"
+      :class="{ 'prize-card--locked': isModalOpen }"
       :style="{ left: runawayPos.x + 'px', top: runawayPos.y + 'px' }"
       @click="pick(runawayCard)"
       @mouseenter="jumpAway"
@@ -190,7 +231,30 @@ onUnmounted(() => {
     </div>
   </Teleport>
 
-  <HonestConfetti ref="confettiRef" />
+  <Teleport to="body">
+    <div v-if="pageConfettiPieces.length" class="page-confetti">
+      <span
+        v-for="piece in pageConfettiPieces"
+        :key="piece.id"
+        class="page-confetti__piece"
+        :style="piece.style"
+      />
+    </div>
+  </Teleport>
+
+  <Teleport to="body">
+    <div v-if="showAccepted" class="modal-backdrop" @click.self="closeAccepted">
+      <div class="modal">
+        <h3 class="modal__title">Accepted! <br> You have just signed up for the endless Sis love!</h3>
+        <button class="modal__proceed" @click="closeAccepted">
+          Proceed
+          <span class="modal__proceed-arrow">&rarr;</span>
+        </button>
+        <p class="modal__text"><em>*No returns, no exchanges possible</em></p>
+      </div>
+    </div>
+  </Teleport>
+
 </template>
 
 <style lang="scss" scoped>
@@ -200,6 +264,11 @@ onUnmounted(() => {
   justify-content: center;
   gap: 1rem;
   padding: 0.5rem 0;
+
+  &--locked {
+    pointer-events: none;
+    opacity: 0.6;
+  }
 }
 
 .prize-card {
@@ -259,6 +328,11 @@ onUnmounted(() => {
     box-shadow: 0 14px 26px rgba(45, 36, 56, 0.3);
     transition: left 0.18s ease-out, top 0.18s ease-out, transform 0.15s ease;
   }
+
+  &--locked {
+    pointer-events: none;
+    opacity: 0.6;
+  }
 }
 
 .prize-hint {
@@ -303,22 +377,72 @@ onUnmounted(() => {
     font-size: 1.2rem;
     font-weight: 800;
     color: #2d2438;
-    margin: 0.5rem 0 0.25rem;
   }
 
   &__text {
     font-size: 0.9rem;
     color: #6b6178;
-    margin-bottom: 1.25rem;
+    margin: 1.25rem 0;
   }
 
   &__close {
     padding: 0.65rem 1.75rem;
     border-radius: 999px;
-    background: linear-gradient(135deg, #ff8a9c, #ff5e78 55%, #e8425c);
+    background: linear-gradient(135deg, #4bbed4, #4c70b8 55%, #091186);
     color: #fff;
     font-weight: 700;
-    box-shadow: 0 8px 18px rgba(255, 94, 120, 0.35);
+    box-shadow: 0 8px 18px rgba(9, 17, 134, 0.35);
+  }
+
+  &__proceed {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.65rem 1.75rem;
+    margin-top: 1rem;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #6fe6a9, #37c58f 55%, #1f9d6b);
+    color: #fff;
+    font-weight: 700;
+    box-shadow: 0 8px 18px rgba(55, 197, 143, 0.35);
+  }
+
+  &__proceed-arrow {
+    font-weight: 900;
+    transition: transform 0.15s ease;
+  }
+
+  &__proceed:hover &__proceed-arrow {
+    transform: translateX(3px);
+  }
+}
+
+.page-confetti {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  overflow: hidden;
+  pointer-events: none;
+
+  &__piece {
+    position: absolute;
+    top: -10%;
+    border-radius: 2px;
+    opacity: 0.95;
+    animation-name: confetti-fall;
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+  }
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(115vh) rotate(360deg);
+    opacity: 0.85;
   }
 }
 
